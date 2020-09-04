@@ -1,4 +1,5 @@
 # encoding: UTF-8
+# via https://github.com/bbhoss/ruby-hl7/blob/master/lib/segments/in1.rb
 class HL7::Message::Segment::IN1 < HL7::Message::Segment
   add_field :set_id
   add_field :insurance_plan_id
@@ -48,5 +49,9 @@ class HL7::Message::Segment::IN1 < HL7::Message::Segment
   add_field :prior_insurance_plan_id
   add_field :coverage_type
   add_field :handicap
-  add_field :insured_id_number
+  add_field :insureds_id_number
+  add_field :signature_code
+  add_field :signature_code_date
+  add_field :insureds_birth_place
+  add_field :vip_indicator
 end

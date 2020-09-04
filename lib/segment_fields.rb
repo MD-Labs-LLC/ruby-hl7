@@ -1,6 +1,6 @@
 #  SegmentFields
 #  class HL7::Message::Segment::NK1 < HL7::Message::Segment
-#    wieght 100 # segments are sorted ascendingly
+#    weight 100 # segments are sorted ascendingly
 #    add_field :something_you_want       # assumes :idx=>1
 #    add_field :something_else, :idx=>6  # :idx=>6 and field count=6
 module HL7::Message::SegmentFields
@@ -56,13 +56,31 @@ module HL7::Message::SegmentFields
         (@fields ||= [])
       end
     end
+
+    def alias_field(new_field_name, old_field_name)
+      self.class_eval <<-END
+        def #{new_field_name}(val=nil)
+          raise HL7::InvalidDataError.new unless self.class.fields[:#{old_field_name}]
+          unless val
+            read_field( :#{old_field_name} )
+          else
+            write_field( :#{old_field_name}, val )
+            val # this matches existing n= method functionality
+          end
+        end
+
+        def #{new_field_name}=(value)
+          write_field( :#{old_field_name}, value )
+        end
+      END
+    end
   end
 
   def field_info( name ) #:nodoc:
     field_blk = nil
     field_format = nil
-    idx = name # assume we've gotten a fixnum
-    unless name.kind_of?( Fixnum )
+    idx = name # assume we've gotten a integer
+    unless name.kind_of?(Integer)
       fld_info = self.class.fields[ name ]
       idx = fld_info[:idx].to_i
       field_blk = fld_info[:blk]
@@ -70,6 +88,14 @@ module HL7::Message::SegmentFields
     end
 
     [ idx, field_blk, field_format ]
+  end
+
+  def []( index )
+    @elements[index]
+  end
+
+  def []=( index, value )
+    @elements[index] = value.to_s
   end
 
   def read_field( name ) #:nodoc:

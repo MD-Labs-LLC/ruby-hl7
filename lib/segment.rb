@@ -5,7 +5,7 @@
 #
 # == Defining a New Segment
 #  class HL7::Message::Segment::NK1 < HL7::Message::Segment
-#    wieght 100 # segments are sorted ascendingly
+#    weight 100 # segments are sorted ascendingly
 #    add_field :something_you_want       # assumes :idx=>1
 #    add_field :something_else, :idx=>6  # :idx=>6 and field count=6
 #    add_field :something_more           # :idx=>7
@@ -21,11 +21,11 @@ class HL7::Message::Segment
   extend HL7::Message::SegmentListStorage
   include HL7::Message::SegmentFields
 
-  attr :segment_parent, true
-  attr :element_delim
-  attr :item_delim
-  attr :segment_weight
-  attr :repeat_delim
+  attr_accessor :segment_parent
+  attr_reader :element_delim
+  attr_reader :item_delim
+  attr_reader :segment_weight
+  attr_reader :repeat_delim
 
   METHOD_MISSING_FOR_INITIALIZER = <<-END
     def method_missing( sym, *args, &blk )
@@ -143,6 +143,12 @@ class HL7::Message::Segment
   # indicate whether or not the segment has a parent
   def is_child_segment=(val)
     @is_child_segment = val
+  end
+
+  # yield each element in the segment
+  def each # :yields: element
+    return unless @elements
+    @elements.each { |e| yield e }
   end
 
   # get the length of the segment (number of fields it contains)

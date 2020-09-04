@@ -34,10 +34,10 @@ class HL7::Message
   extend HL7::MessageBatchParser
 
   attr_reader :message_parser
-  attr :element_delim
-  attr :item_delim
-  attr :segment_delim
-  attr :delimiter
+  attr_reader :element_delim
+  attr_reader :item_delim
+  attr_reader :segment_delim
+  attr_reader :delimiter
 
   # setup a new hl7 message
   # raw_msg:: is an optional object containing an hl7 message
@@ -78,12 +78,12 @@ class HL7::Message
   end
 
   # access a segment of the message
-  # index:: can be a Range, Fixnum or anything that
+  # index:: can be a Range, Integer or anything that
   #         responds to to_sym
   def []( index )
     ret = nil
 
-    if index.kind_of?(Range) || index.kind_of?(Fixnum)
+    if index.kind_of?(Range) || index.kind_of?(Integer)
       ret = @segments[ index ]
     elsif (index.respond_to? :to_sym)
       ret = @segments_by_name[ index.to_sym ]
@@ -94,7 +94,7 @@ class HL7::Message
   end
 
   # modify a segment of the message
-  # index:: can be a Range, Fixnum or anything that
+  # index:: can be a Range, Integer or anything that
   #         responds to to_sym
   # value:: an HL7::Message::Segment object
   def []=( index, value )
@@ -102,12 +102,12 @@ class HL7::Message
       raise HL7::Exception.new( "attempting to assign something other than an HL7 Segment" )
     end
 
-    if index.kind_of?(Range) || index.kind_of?(Fixnum)
+    if index.kind_of?(Range) || index.kind_of?(Integer)
       @segments[ index ] = value
     elsif index.respond_to?(:to_sym)
       (@segments_by_name[ index.to_sym ] ||= []) << value
     else
-      raise HL7::Exception.new( "attempting to use an indice that is not a Range, Fixnum or to_sym providing object" )
+      raise HL7::Exception.new( "attempting to use an indice that is not a Range, Integer or to_sym providing object" )
     end
 
     value.segment_parent = self
@@ -146,7 +146,7 @@ class HL7::Message
     (@segments ||= []) << value
     name = value.class.to_s.gsub("HL7::Message::Segment::", "").to_sym
     (@segments_by_name[ name ] ||= []) << value
-    sequence_segments unless @parsing # let's auto-set the set-id as we go
+    sequence_segments unless defined?(@parsing) && @parsing # let's auto-set the set-id as we go
   end
 
   # yield each segment in the message
@@ -196,17 +196,22 @@ class HL7::Message
     end
   end
 
+  # Checks if any of the results is a correction
+  def correction?
+    Array(self[:OBX]).any?(&:correction?)
+  end
+
   private
   def generate_segments( ary )
     raise HL7::ParseError.new( "no array to generate segments" ) unless ary.length > 0
 
     @parsing = true
-    last_seg = nil
+    segment_stack = []
     ary.each do |elm|
       if elm.slice(0,3) == "MSH"
         update_delimiters(elm)
       end
-      last_seg = generate_segment( elm, last_seg ) || last_seg
+      last_seg = generate_segment( elm, segment_stack ) || last_seg
     end
     @parsing = nil
   end
@@ -218,9 +223,9 @@ class HL7::Message
     @delimiter.element = @element_delim
   end
 
-  def generate_segment( elm, last_seg )
+  def generate_segment( elm, segment_stack )
     segment_generator = HL7::Message::SegmentGenerator.new( elm,
-                                                            last_seg,
+                                                            segment_stack,
                                                             @delimiter )
 
     return nil unless segment_generator.valid_segments_parts?
@@ -229,26 +234,28 @@ class HL7::Message
     new_seg = segment_generator.build
     new_seg.segment_parent = self
 
-    choose_segment_from(last_seg, new_seg, segment_generator.seg_name)
+    choose_segment_from(segment_stack, new_seg, segment_generator.seg_name)
   end
 
-  def choose_segment_from(last_seg, new_seg, seg_name)
-    if last_seg && last_seg.has_children? && last_seg.accepts?( seg_name )
-      last_seg.children << new_seg
-      new_seg.is_child_segment = true
-
-      last_seg
-    elsif last_seg && last_seg.has_children? && last_seg.children.last &&
-          last_seg.children.last.has_children? && last_seg.children.last.accepts?( seg_name )
-      last_seg_child = last_seg.children.last
-      last_seg_child.children << new_seg
-      new_seg.is_child_segment = true
-
-      last_seg
-    else
+  def choose_segment_from(segment_stack, new_seg, seg_name)
+    # Segments have been previously seen
+    while(segment_stack.length > 0)
+      if segment_stack.last && segment_stack.last.has_children? && segment_stack.last.accepts?( seg_name )
+        # If a previous segment can accept the current segment as a child,
+        # add it to the previous segments children
+        segment_stack.last.children << new_seg
+        new_seg.is_child_segment = true
+        segment_stack << new_seg
+        break;
+      else
+        segment_stack.pop
+      end
+    end
+    # Root of segment 'tree'
+    if segment_stack.length == 0
       @segments << new_seg
+      segment_stack << new_seg
       setup_segment_lookup_by_name( seg_name, new_seg)
-      new_seg
     end
   end
 
@@ -261,7 +268,7 @@ class HL7::Message
     end
   end
 
-   def get_symbol_from_name(seg_name)
+  def get_symbol_from_name(seg_name)
     seg_name.to_s.strip.length > 0 ? seg_name.to_sym : nil
   end
 
