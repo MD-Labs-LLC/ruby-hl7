@@ -30,7 +30,7 @@ Maintained by the Collaborative Software Initiative
 
 In your Gemfile:
 
-  `gem 'ruby-hl7', github: 'salf/ruby-hl7', branch: 'master'`
+  `gem 'ruby-hl7', github: 'austinbachman/ruby-hl7', branch: 'master'`
 
 
 ## Basic Usage
