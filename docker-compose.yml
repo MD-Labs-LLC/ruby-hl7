@@ -7,4 +7,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/ruby-hl7/
-    command: tail -f /dev/null
+    command: >
+      bash -c "echo \"'docker-compose exec web bin/console' to run irb\"
+      && (tail -f /dev/null)"

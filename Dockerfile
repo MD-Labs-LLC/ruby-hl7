@@ -21,4 +21,3 @@ COPY ruby-hl7.gemspec .
 RUN bundle install
 
 COPY . $INSTALL_PATH
-RUN echo "'docker-compose exec web bin/console' to run irb"
