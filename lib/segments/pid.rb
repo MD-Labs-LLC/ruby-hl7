@@ -21,7 +21,7 @@ class HL7::Message::Segment::PID < HL7::Message::Segment
   add_field :patient_alias
   add_field :race
   add_field :address, {:format => HL7::Message::DataTypes.XAD}
-  add_field :country_code
+  add_field :county_code
   add_field :phone_home
   add_field :phone_business
   add_field :primary_language

@@ -24,8 +24,8 @@ describe HL7::Message::Segment::IN1 do
         expect(in1.group_number).to eq 'A'
         expect(in1.group_name).to eq 'GRP'
         expect(in1.name_of_insured).to eq 'SMITH^JOHN'
-        expect(in1.insureds_relationship_to_patient).to eq '19'
-        expect(in1.insureds_date_of_birth).to eq '19700102'
+        expect(in1.insured_relationship).to eq '19'
+        expect(in1.insured_dob).to eq '19700102'
         expect(in1.policy_number).to eq 'WC23732763278A'
         expect(in1.vip_indicator).to eq 'X'
       end.not_to raise_error

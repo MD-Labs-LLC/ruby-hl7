@@ -26,7 +26,7 @@ describe HL7::Message::Segment::PID do
 
     it 'sets the name correctly' do
       pid = HL7::Message::Segment::PID.new @base
-      pid.patient_name['origin'].should == 'LastName^FirstName^MiddleInitial^SR^NickName'
+      expect(pid.patient_name['origin']).to eq 'LastName^FirstName^MiddleInitial^SR^NickName'
     end
 
     it 'supports death fields' do
@@ -50,7 +50,7 @@ describe HL7::Message::Segment::PID do
       expect(pid.religion).to eq ""
       expect(pid.account_number).to eq "555.55"
       expect(pid.social_security_num).to eq "012345678"
-      expect(pid.driver_license_num).to eq ""
+      expect(pid.drivers_license_number).to eq ""
       expect(pid.mothers_id).to eq ""
       expect(pid.ethnic_group).to eq ""
       expect(pid.birthplace).to eq ""

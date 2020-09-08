@@ -11,7 +11,7 @@ describe HL7::Message::Segment::DG1 do
     it "allows access to an DG1 segment" do
       expect(segment.set_id).to eq("1")
       expect(segment.diagnosis_coding_method).to eq("I9")
-      expect(segment.diagnosis_code).to eq("71596^OSTEOARTHROS NOS-L/LEG ^I9")
+      expect(segment.diagnosis_code['origin']).to eq("71596^OSTEOARTHROS NOS-L/LEG ^I9")
       expect(segment.diagnosis_description).to eq("OSTEOARTHROS NOS-L/LEG ")
       expect(segment.diagnosis_date_time).to eq("20170615140551-0800")
       expect(segment.diagnosis_type).to eq("")

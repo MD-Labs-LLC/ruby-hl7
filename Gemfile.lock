@@ -63,4 +63,4 @@ DEPENDENCIES
   simplecov-html (~> 0.10.0)
 
 BUNDLED WITH
-   1.17.2
+   2.1.4

@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  web: &web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/ruby-hl7/
+    command: tail -f /dev/null
