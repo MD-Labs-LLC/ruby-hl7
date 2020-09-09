@@ -127,7 +127,7 @@ module HL7::Message::SegmentFields
       end
     else
       field = ret
-      if ret.include?(@item_delim) && !field_format.nil?
+      if !field_format.nil?
         component = Hash.new
 
         str = ret.split(@item_delim)
